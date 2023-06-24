@@ -3,6 +3,7 @@ import openai
 import rubric
 import re
 import example
+from collections import defaultdict
 
 
 def analyze_emotional_competencies(conversation):
@@ -66,6 +67,7 @@ def main():
 
     # File upload
     uploaded_file = st.file_uploader("Upload conversation file", type=['txt'])
+    
 
     if uploaded_file is not None:
         # Read the uploaded file
@@ -83,19 +85,28 @@ def main():
 
         upload_lines = uploaded_file.read().decode('utf-8')  # .splitlines()
 
-        # 정규식 패턴을 사용하여 사용자별로 분리
-        user_pattern = r"(?<=참석자 )\d+"
-        users = re.findall(user_pattern, upload_lines)
+                
+        dialogs = defaultdict(list)
 
-        # 사용자별로 텍스트 추출
-        user_texts = re.split(user_pattern, upload_lines)[1:]
+        # 각 참석자의 대화 추출
+        for match in re.finditer(r'(참석자 \d+)\s*(.*?)\s*(?=(참석자 \d+)|$)', upload_lines, re.DOTALL):
+            participant, dialog = match.group(1), match.group(2)
+            
+            # 문장 내부의 개행 문자를 공백으로 치환
+            dialog = dialog.replace('\n', ' ').strip()
 
-        # 사용자별로 분리된 텍스트를 리스트에 담기
-        user_list = []
-        for user, user_text in zip(users, user_texts):
-            user_list.append(user_text.strip())
+            # URL이나 문장이 아닌 문자열 제외
+            if 'clovanote.naver.com' in dialog:
+                dialog = dialog.split('clovanote.naver.com')[0].strip()
+            
+            # 대화를 참석자의 리스트에 추가
+            dialogs[participant].append(dialog)
 
-        st.write(user_list)
+        # 결과 출력
+        for participant, dialog in dialogs.items():
+            st.write(f'{participant}의 대화: {dialog}')
+
+   
 
         # Analyze the conversation and get the scores
         scores = analyze_emotional_competencies(user_list)
