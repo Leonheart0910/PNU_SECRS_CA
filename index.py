@@ -3,7 +3,9 @@ from collections import defaultdict
 
 import openai
 import streamlit as st
-
+import plotly.express as px # 5.15.0
+import pandas as pd
+import numpy as np # 1.24.3
 import rubric
 
 import itertools
