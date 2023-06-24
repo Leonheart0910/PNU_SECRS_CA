@@ -14,7 +14,7 @@ import itertools
 
 def analyze_emotional_competencies(conversation):
     # Initialize the OpenAI API client
-    openai.api_key = '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'
+    openai.api_key = 'YOUR_API_KEY'
     print(conversation)
 
     # Call the OpenAI API for language analysis
