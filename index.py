@@ -6,6 +6,9 @@ import streamlit as st
 
 import rubric
 
+import itertools
+
+
 
 def analyze_emotional_competencies(conversation):
     # Initialize the OpenAI API client
@@ -90,6 +93,25 @@ def main():
 
         # 점수를 int형으로 변환하고 리스트로 출력
         scores = [[int(score) for score in participant_score] for participant_score in scores]
+        # 1차원 리스트로 변경
+        flattened_list = list(itertools.chain(*scores))
+        num = len(scores)
+        value = '자기인식', '자기관리', '사회적인식', '관계인식','책임있는의사결정'
+        variable = list(value * num)
+        list_box = []
+        for i in range(len(scores)):
+            list_box.append(list(str(i + 1) * 5))
+        group = list(itertools.chain(*list_box))
+
+        df = pd.DataFrame(dict(flattened_list,variable,group
+                      ))
+        fig = px.line_polar(df, r='value', theta='variable', line_close=True,
+                          color='group', color_discrete_sequence=px.colors.sequential.Magma)
+        fig.update_traces(fill='toself')
+
+    st.plotly_chart(fig)
+    st.dataframe(df[['group', 'variable', 'value']])
+
 
 
 if __name__ == '__main__':
