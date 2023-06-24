@@ -107,7 +107,7 @@ def main():
     group = list(itertools.chain(*list_box))
 
     df = pd.DataFrame(dict(flattened_list, variable, group))
-    fig = px.line_polar(df, r='value', theta='variable', line_close=True,
+    fig = px.line_polar(df, r='flattened_list', theta='variable', line_close=True,
                         color='group', color_discrete_sequence=px.colors.sequential.Magma)
     fig.update_traces(fill='toself')
 
