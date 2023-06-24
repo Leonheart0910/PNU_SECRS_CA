@@ -1,33 +1,10 @@
-import streamlit as st
-import openai
-import rubric
 import re
-import example
 from collections import defaultdict
 
+import openai
+import streamlit as st
 
-def analyze_scores(conversation):
-    # Initialize the OpenAI API client
-    openai.api_key = 'YOUR_API_KEY'
-
-    # Analyze the conversation and assign points to each participant
-    scores = {}
-    for participant, utterances in conversation.items():
-        # Concatenate all utterances of the participant into a single string
-        text = " ".join(utterances)
-
-        # Call the OpenAI API for language analysis
-        response = openai.Answer.create(
-            search_model="ada",
-            model="curie",
-            question="How many points should I give this participant?",
-            examples_context=text,
-            examples=[["0 points", "This participant was not helpful at all."],
-                      ["1 point", "This participant was somewhat helpful."],
-                      ["2 points", "This participant was very helpful."]],
-            max_rerank=10,
-            max_tokens=5,
-            stop=["\n", ""])
+import rubric
 
 
 def analyze_emotional_competencies(conversation):
@@ -55,8 +32,8 @@ def analyze_emotional_competencies(conversation):
                         f"'...' | %d | %d | %d | %d | %d\n"
                         f"'...' | %d | %d | %d | %d | %d\n"
                         f"'...' | %d | %d | %d | %d | %d\n"
-                        # f"'...' |  |\n"
-                        # f"Just example. DO NOT COPY THIS."
+             # f"'...' |  |\n"
+             # f"Just example. DO NOT COPY THIS."
              },
             {"role": "user",
              "content": str(conversation) +
@@ -114,7 +91,7 @@ def main():
         #     scores = analyze_emotional_competencies(dialog)
         #     st.subheader(participant)
         #     st.markdown(scores.choices[0].message.content)
-            # st.write(scores.choices[0].message)
+        # st.write(scores.choices[0].message)
 
 
 if __name__ == '__main__':
