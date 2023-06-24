@@ -12,12 +12,6 @@ def analyze_emotional_competencies(conversation):
     openai.api_key = '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'
     print(conversation)
 
-    # Analyze the conversation and assign points to each participant
-    scores = {}
-    # for participant, utterances in conversation.items():
-    #     # Concatenate all utterances of the participant into a single string
-    #     text = " ".join(utterances)
-
     # Call the OpenAI API for language analysis
     response = openai.ChatCompletion.create(
         model='gpt-4',
@@ -32,8 +26,6 @@ def analyze_emotional_competencies(conversation):
                         f"'...' | %d | %d | %d | %d | %d\n"
                         f"'...' | %d | %d | %d | %d | %d\n"
                         f"'...' | %d | %d | %d | %d | %d\n"
-             # f"'...' |  |\n"
-             # f"Just example. DO NOT COPY THIS."
              },
             {"role": "user",
              "content": str(conversation) +
@@ -79,20 +71,18 @@ def main():
             # 대화를 참석자의 리스트에 추가
             dialogs[participant].append(dialog)
 
-        strL = []
         # 결과 출력
         for participant, dialog in dialogs.items():
             st.write(f'{participant}의 대화: {dialog}')
 
         # Analyze the conversation and get the scores
-        # st.write(dialogs)
         scores = analyze_emotional_competencies(dialogs)
         st.markdown(scores.choices[0].message.content)
         print(scores.choices[0].message.content)
 
         markdown_text = scores.choices[0].message.content
 
-                # "### 총점" 아래의 내용만 추출
+        # "### 총점" 아래의 내용만 추출
         total_score_section = markdown_text.split('### 총점')[-1]
 
         # 참석자의 점수를 추출
@@ -101,6 +91,6 @@ def main():
         # 점수를 int형으로 변환하고 리스트로 출력
         scores = [[int(score) for score in participant_score] for participant_score in scores]
 
-print(scores)
+
 if __name__ == '__main__':
     main()
