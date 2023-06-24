@@ -78,6 +78,7 @@ def main():
             # 대화를 참석자의 리스트에 추가
             dialogs[participant].append(dialog)
 
+        strL = []
         # 결과 출력
         for participant, dialog in dialogs.items():
             st.write(f'{participant}의 대화: {dialog}')
@@ -88,6 +89,17 @@ def main():
         st.markdown(scores.choices[0].message.content)
         print(scores.choices[0].message.content)
 
+        markdown_text = scores.choices[0].message.content
 
+                # "### 총점" 아래의 내용만 추출
+        total_score_section = markdown_text.split('### 총점')[-1]
+
+        # 참석자의 점수를 추출
+        scores = re.findall(r'\|\s참석자 \d\s\|\s(\d)\s\|\s(\d)\s\|\s(\d)\s\|\s(\d)\s\|\s(\d)\s\|', total_score_section)
+
+        # 점수를 int형으로 변환하고 리스트로 출력
+        scores = [[int(score) for score in participant_score] for participant_score in scores]
+
+print(scores)
 if __name__ == '__main__':
     main()
