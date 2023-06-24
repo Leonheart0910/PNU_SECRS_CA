@@ -2,11 +2,12 @@ import streamlit as st
 import openai
 import rubric
 import re
+import example
 
 
 def analyze_emotional_competencies(conversation):
     # Initialize the OpenAI API client
-    openai.api_key = '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'
+    openai.api_key = 'YOUR_OPENAI_API_KEY'
 
     # Analyze the conversation and assign points to each participant
     scores = {}
@@ -21,7 +22,8 @@ def analyze_emotional_competencies(conversation):
                 {"role": "system",
                  "content": f"You are a psychologist. ${rubric} that is big five categories of personality traits and "
                             f"three detail trasit levels then you can give a score to the participant based analysis."
-                            f"You should give a score to the sentence based on the analysis."},
+                            f"You should give a score to the sentence based on the analysis."
+                            f"Here is example ${example}"},
                 {"role": "user", "content": text}
             ],
             # functions=[
@@ -75,7 +77,7 @@ def main():
         #         else:
         #             conversation[current_speaker].append(line)
 
-        upload_lines = uploaded_file.read().decode('utf-8')#.splitlines()
+        upload_lines = uploaded_file.read().decode('utf-8')  # .splitlines()
 
         # 정규식 패턴을 사용하여 사용자별로 분리
         user_pattern = r"(?<=참석자 )\d+"
