@@ -9,31 +9,24 @@ import streamlit as st
 
 import construct
 
+openai.api_key = 'YOUR_API_KEY'
 gpt_model = 'gpt-4'
 gpt_temperature = 0.1
 gpt_top_p = 1
 
 
-def analyze_emotional_competencies(conversation):
+def analyze_emotional_competencies(messages):
     global gpt_model
     global gpt_temperature
     global gpt_top_p
 
     # Initialize the OpenAI API client
-    openai.api_key = 'YOUR_API_KEY'
-    print(conversation)
+    # print(conversation)
 
     # Call the OpenAI API for language analysis
     response = openai.ChatCompletion.create(
         model=gpt_model,
-        messages=[
-            {"role": "system",
-             "content": construct.GPT_CONSTRUCT['SYSTEM_CONTENT']
-             },
-            {"role": "user",
-             "content": str(conversation) + construct.GPT_CONSTRUCT['USER_CONTENT']
-             }
-        ],
+        messages=messages,
         temperature=gpt_temperature,
         n=1,
         top_p=gpt_top_p,
@@ -128,8 +121,19 @@ def main():
 
     display_dialogs(dialogs)
 
+    messages = [
+        {
+            "role": "system",
+            "content": construct.GPT_CONSTRUCT['SYSTEM_CONTENT']
+        },
+        {
+            "role": "user",
+            "content": str(dialogs) + construct.GPT_CONSTRUCT['USER_CONTENT']
+        }
+    ]
+
     # Analyze the conversation and get the scores
-    response = analyze_emotional_competencies(dialogs)
+    response = analyze_emotional_competencies(messages)
     st.markdown(response.choices[0].message.content)
 
     markdown_text = response.choices[0].message.content
@@ -138,6 +142,16 @@ def main():
 
     st.plotly_chart(fig)
     st.dataframe(df[['group', 'variable', 'value']])
+
+    if response.choices[0].finish_reason == "stop":
+        st.markdown("### 대화가 끝났습니다.")
+        st.info("결과가 완전하지 않다면 재시도해주세요.")
+        if st.button("재시도", key="retry", use_container_width=True):
+            analyze_emotional_competencies(messages)
+    else:
+        st.error("### 대화가 끝나지 않았습니다.")
+        if st.button("Continue", key="continue", use_container_width=True):
+            main()
 
 
 if __name__ == '__main__':
