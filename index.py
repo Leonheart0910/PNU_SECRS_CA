@@ -11,6 +11,8 @@ import rubric
 
 import construct
 
+gpt_model = 'gpt-4'
+
 
 def analyze_emotional_competencies(conversation):
     # Initialize the OpenAI API client
@@ -19,7 +21,7 @@ def analyze_emotional_competencies(conversation):
 
     # Call the OpenAI API for language analysis
     response = openai.ChatCompletion.create(
-        model='gpt-4',
+        model=gpt_model,
         messages=[
             {"role": "system",
              "content": construct.GPT_CONSTRUCT['SYSTEM_CONTENT']
@@ -38,7 +40,9 @@ def analyze_emotional_competencies(conversation):
 
 # Streamlit app
 def main():
+    global gpt_model
     st.title("Emotional Competency Analysis")
+    gpt_model = st.selectbox("Select the model", ["gpt-4", "gpt-3.5-turbo-16k"])
 
     # File upload
     uploaded_file = st.file_uploader("Upload conversation file", type=['txt'])
