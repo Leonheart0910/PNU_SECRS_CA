@@ -12,9 +12,12 @@ import rubric
 import construct
 
 gpt_model = 'gpt-4'
+gpt_temperature = 0.1
 
 
 def analyze_emotional_competencies(conversation):
+    global gpt_model
+    global gpt_temperature
     # Initialize the OpenAI API client
     openai.api_key = 'YOUR_API_KEY'
     print(conversation)
@@ -30,7 +33,7 @@ def analyze_emotional_competencies(conversation):
              "content": str(conversation) + construct.GPT_CONSTRUCT['USER_CONTENT']
              }
         ],
-        temperature=0.6,
+        temperature=gpt_temperature,
         n=1,
         stop=None,
     )
@@ -100,6 +103,42 @@ def main():
     fig = px.line_polar(df, r='value', theta='variable', line_close=True,
                         color='group', color_discrete_sequence=px.colors.sequential.Magma)
     fig.update_traces(fill='toself')
+
+
+
+# Streamlit app
+def main():
+    global gpt_model
+    global gpt_temperature
+    global gpt_top_p
+
+    st.title("Emotional Competency Analysis")
+    gpt_model = st.selectbox("Select the model", ["gpt-4", "gpt-3.5-turbo-16k"])
+    gpt_temperature = st.slider("Select the temperature", 0.0, 2.0, 0.1, 0.1,
+                                help="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will "
+                                     "make the output more random, while lower values like 0.2 will make it more "
+                                     "focused and deterministic.\n\n"
+                                     "We generally recommend altering this or top_p but not both.\n\n"
+                                     "DEFAULT: 1.0\n\n"
+                                     "WE HAVE CHANGED THIS VALUE")
+
+    # File upload
+    uploaded_file = st.file_uploader("Upload conversation file", type=['txt'])
+
+    if uploaded_file is None:
+        return
+
+    dialogs = process_uploaded_file(uploaded_file)
+
+    display_dialogs(dialogs)
+
+    # Analyze the conversation and get the scores
+    response = analyze_emotional_competencies(dialogs)
+    st.markdown(response.choices[0].message.content)
+
+    markdown_text = response.choices[0].message.content
+
+    df, fig = extract_scores(markdown_text)
 
     st.plotly_chart(fig)
     st.dataframe(df[['group', 'variable', 'value']])
