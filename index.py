@@ -1,13 +1,11 @@
+import itertools
 import re
 from collections import defaultdict
 
 import openai
 import pandas as pd
-import streamlit as st
 import plotly.express as px  # 5.15.0
-import pandas as pd
-import numpy as np  # 1.24.3
-import rubric
+import streamlit as st
 
 import construct
 
@@ -53,54 +51,49 @@ def process_uploaded_file(uploaded_file):
 
     dialogs = defaultdict(list)
 
-    # 각 참석자의 대화 추출
+    # Extract conversation for each participant
     for match in re.finditer(r'(참석자 \d+)\s*(.*?)\s*(?=(참석자 \d+)|$)', upload_lines, re.DOTALL):
         participant, dialog = match.group(1), match.group(2)
 
-        # 문장 내부의 개행 문자를 공백으로 치환
+        # Replace newline characters with spaces within sentences
         dialog = dialog.replace('\n', ' ').strip()
 
-        # URL이나 문장이 아닌 문자열 제외
+        # Exclude URLs or non-sentence strings
         if 'clovanote.naver.com' in dialog:
             dialog = dialog.split('clovanote.naver.com')[0].strip()
 
-        # 대화를 참석자의 리스트에 추가
+        # Add the dialog to the participant's list
         dialogs[participant].append(dialog)
 
-    # 결과 출력
+    return dialogs
+
+
+# Function to display conversation for each participant
+def display_dialogs(dialogs):
     for participant, dialog in dialogs.items():
         st.write(f'{participant}의 대화: {dialog}')
 
-    # Analyze the conversation and get the scores
-    scores = analyze_emotional_competencies(dialogs)
-    st.markdown(scores.choices[0].message.content)
-    print(scores.choices[0].message.content)
 
-    markdown_text = scores.choices[0].message.content
-
-    # "### 총점" 아래의 내용만 추출
+# Function to extract scores from the analyzed conversation
+def extract_scores(markdown_text):
     total_score_section = markdown_text.split('### 총점')[-1]
-
-    # 참석자의 점수를 추출
-    scores = re.findall(r'\|\s참석자 \d\s\|\s(\d)\s\|\s(\d)\s\|\s(\d)\s\|\s(\d)\s\|\s(\d)\s\|', total_score_section)
-
-    # 점수를 int형으로 변환하고 리스트로 출력
-    scores = [[int(score) for score in participant_score] for participant_score in scores]
-    # 1차원 리스트로 변경
-    flattened_list = list(itertools.chain(*scores))
-    num = len(scores)
+    response = re.findall(r'\|\s참석자 \d\s\|\s(\d)\s\|\s(\d)\s\|\s(\d)\s\|\s(\d)\s\|\s(\d)\s\|', total_score_section)
+    response = [[int(score) for score in participant_score] for participant_score in response]
+    flattened_list = list(itertools.chain(*response))
+    num = len(response)
     value = '자기인식', '자기관리', '사회적인식', '관계인식', '책임있는의사결정'
     variable = list(value * num)
     list_box = []
-    for i in range(len(scores)):
+    for i in range(len(response)):
         list_box.append(list(str(i + 1) * 5))
     group = list(itertools.chain(*list_box))
 
-    df = pd.DataFrame({'value':flattened_list, 'variable':variable, 'group' : group})
+    df = pd.DataFrame({'value': flattened_list, 'variable': variable, 'group': group})
     fig = px.line_polar(df, r='value', theta='variable', line_close=True,
                         color='group', color_discrete_sequence=px.colors.sequential.Magma)
     fig.update_traces(fill='toself')
 
+    return df, fig
 
 
 # Streamlit app
