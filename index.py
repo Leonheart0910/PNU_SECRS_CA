@@ -13,11 +13,14 @@ import construct
 
 gpt_model = 'gpt-4'
 gpt_temperature = 0.1
+gpt_top_p = 1
 
 
 def analyze_emotional_competencies(conversation):
     global gpt_model
     global gpt_temperature
+    global gpt_top_p
+
     # Initialize the OpenAI API client
     openai.api_key = 'YOUR_API_KEY'
     print(conversation)
@@ -35,6 +38,7 @@ def analyze_emotional_competencies(conversation):
         ],
         temperature=gpt_temperature,
         n=1,
+        top_p=gpt_top_p,
         stop=None,
     )
 
@@ -42,17 +46,10 @@ def analyze_emotional_competencies(conversation):
 
 
 # Streamlit app
-def main():
-    global gpt_model
-    st.title("Emotional Competency Analysis")
-    gpt_model = st.selectbox("Select the model", ["gpt-4", "gpt-3.5-turbo-16k"])
 
-    # File upload
-    uploaded_file = st.file_uploader("Upload conversation file", type=['txt'])
-
-    if uploaded_file is None:
-        return
-    upload_lines = uploaded_file.read().decode('utf-8')  # .splitlines()
+# Function to process uploaded conversation file
+def process_uploaded_file(uploaded_file):
+    upload_lines = uploaded_file.read().decode('utf-8')
 
     dialogs = defaultdict(list)
 
@@ -121,6 +118,12 @@ def main():
                                      "We generally recommend altering this or top_p but not both.\n\n"
                                      "DEFAULT: 1.0\n\n"
                                      "WE HAVE CHANGED THIS VALUE")
+    gpt_top_p = st.slider("Select the top_p", 0.0, 1.0, 1.0, 0.1,
+                          help="An alternative to sampling with temperature, called nucleus sampling, where the model "
+                               "considers the results of the tokens with top_p probability mass.\n"
+                               "So 0.1 means only the tokens comprising the top 10% probability mass are "
+                               "considered.\n\n"
+                               "We generally recommend altering this or temperature but not both.")
 
     # File upload
     uploaded_file = st.file_uploader("Upload conversation file", type=['txt'])
